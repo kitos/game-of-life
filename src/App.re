@@ -89,6 +89,11 @@ let make = _ => {
 
     <div>
       <h1> {ReasonReact.string("Game of life")} </h1>
+      <p>
+        <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank">
+          {ReasonReact.string("What is it? (Wiki)")}
+        </a>
+      </p>
       <h2> {ReasonReact.string({j|Generation: $generation|j})} </h2>
       {ReasonReact.array(
          Js_array.mapi(

@@ -32,7 +32,13 @@ let component = ReasonReact.reducerComponent("Grid");
 let make = _ => {
   ...component,
 
-  initialState: () => {fieldSize: initialFieldSize, interval: 300, cells: [|[||]|], generation: 0, intervalId: None},
+  initialState: () => {
+    fieldSize: initialFieldSize,
+    interval: 300,
+    cells: [|[||]|],
+    generation: 0,
+    intervalId: None,
+  },
 
   reducer: (action, state) =>
     switch (action) {
@@ -41,22 +47,36 @@ let make = _ => {
         ...state,
         generation: 0,
         cells:
-          Js_array_plus.init_matrix(state.fieldSize, state.fieldSize, () => Js_math.random() > 0.7 ? Alive : Dead),
+          Js_array_plus.init_matrix(state.fieldSize, state.fieldSize, () =>
+            Js_math.random() > 0.7 ? Alive : Dead
+          ),
       })
     | Clear =>
       ReasonReact.Update({
         ...state,
         generation: 0,
-        cells: Js_array_plus.make_matrix(state.fieldSize, state.fieldSize, Dead),
+        cells:
+          Js_array_plus.make_matrix(state.fieldSize, state.fieldSize, Dead),
       })
-    | Toggle(coord) => ReasonReact.Update({...state, generation: 0, cells: toggle(state.cells, coord)})
-    | Evolve => ReasonReact.Update({...state, cells: next_generation(state.cells), generation: state.generation + 1})
+    | Toggle(coord) =>
+      ReasonReact.Update({
+        ...state,
+        generation: 0,
+        cells: toggle(state.cells, coord),
+      })
+    | Evolve =>
+      ReasonReact.Update({
+        ...state,
+        cells: next_generation(state.cells),
+        generation: state.generation + 1,
+      })
     | Start =>
       ReasonReact.SideEffects(
         ({send}) =>
           switch (state.intervalId) {
           | None =>
-            let id = Js_global.setInterval(() => send(Evolve), state.interval);
+            let id =
+              Js_global.setInterval(() => send(Evolve), state.interval);
             send(SetIntervalId(Some(id)));
           | Some(_) => Js_console.log("Game has been already started.")
           },
@@ -68,14 +88,24 @@ let make = _ => {
           | Some(id) =>
             Js_global.clearInterval(id);
             send(SetIntervalId(None));
-          | None => Js_console.log("Game has not been started yet or has be stoped already.")
+          | None =>
+            Js_console.log(
+              "Game has not been started yet or has be stoped already.",
+            )
           },
       )
-    | SetIntervalId(value) => ReasonReact.Update({...state, intervalId: value})
+    | SetIntervalId(value) =>
+      ReasonReact.Update({...state, intervalId: value})
     | SetFieldSize(value) =>
-      ReasonReact.UpdateWithSideEffects({...state, fieldSize: Js_math.max_int(5, value)}, ({send}) => send(Init))
+      ReasonReact.UpdateWithSideEffects(
+        {...state, fieldSize: Js_math.max_int(5, value)},
+        ({send}) => send(Init),
+      )
     | SetInterval(value) =>
-      ReasonReact.UpdateWithSideEffects({...state, interval: Js_math.max_int(50, value)}, ({send}) => send(Stop))
+      ReasonReact.UpdateWithSideEffects(
+        {...state, interval: Js_math.max_int(50, value)},
+        ({send}) => send(Stop),
+      )
     },
 
   didMount: ({send, onUnmount}) => {
@@ -90,7 +120,9 @@ let make = _ => {
     <div>
       <h1> {ReasonReact.string("Game of life")} </h1>
       <p>
-        <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" target="_blank">
+        <a
+          href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life"
+          target="_blank">
           {ReasonReact.string("What is it? (Wiki)")}
         </a>
       </p>
@@ -119,7 +151,9 @@ let make = _ => {
           onClick={_ => {
             send(Stop);
             send(Evolve);
-          }}> {ReasonReact.string("Evolve")} </button>
+          }}>
+          {ReasonReact.string("Evolve")}
+        </button>
         <button onClick={_ => send(inProgress ? Stop : Start)}>
           {ReasonReact.string(inProgress ? "Pause" : "Start")}
         </button>
@@ -127,12 +161,16 @@ let make = _ => {
           onClick={_ => {
             send(Stop);
             send(Init);
-          }}> {ReasonReact.string("Random")} </button>
+          }}>
+          {ReasonReact.string("Random")}
+        </button>
         <button
           onClick={_ => {
             send(Stop);
             send(Clear);
-          }}> {ReasonReact.string("Clear")} </button>
+          }}>
+          {ReasonReact.string("Clear")}
+        </button>
       </p>
       <p>
         <label>
@@ -142,7 +180,9 @@ let make = _ => {
             min=5
             max="50"
             value={string_of_int(state.fieldSize)}
-            onChange={_event => send(SetFieldSize(ReactEvent.Form.target(_event)##value))}
+            onChange={_event =>
+              send(SetFieldSize(ReactEvent.Form.target(_event)##value))
+            }
           />
         </label>
         <label>
@@ -152,7 +192,9 @@ let make = _ => {
             min=50
             max="5000"
             value={string_of_int(state.interval)}
-            onChange={_event => send(SetInterval(ReactEvent.Form.target(_event)##value))}
+            onChange={_event =>
+              send(SetInterval(ReactEvent.Form.target(_event)##value))
+            }
           />
         </label>
       </p>

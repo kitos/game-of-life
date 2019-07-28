@@ -47,7 +47,7 @@ let make = _ => {
         ...state,
         generation: 0,
         cells:
-          Js_array_plus.init_matrix(state.fieldSize, state.fieldSize, () =>
+          Js_array_plus.init_matrix(state.fieldSize, state.fieldSize, _ =>
             Js_math.random() > 0.7 ? Alive : Dead
           ),
       })
@@ -126,6 +126,17 @@ let make = _ => {
           {ReasonReact.string("What is it? (Wiki)")}
         </a>
       </p>
+      <h2> {ReasonReact.string("Figures")} </h2>
+      <FigurePreviews.Jsx2
+        figures=[|
+          ("Glider", [|(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)|]),
+          ("Blinker", [|(0, 0), (1, 0), (2, 0)|]),
+          (
+            "Beacon",
+            [|(0, 0), (1, 0), (0, 1), (3, 3), (3, 2), (2, 3)|],
+          ),
+        |]
+      />
       <h2> {ReasonReact.string({j|Generation: $generation|j})} </h2>
       {ReasonReact.array(
          Js_array.mapi(

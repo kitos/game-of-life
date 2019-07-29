@@ -19,10 +19,10 @@ type action =
   | SetFieldSize(int)
   | SetInterval(int);
 
-let classByState = (state: cellState) =>
+let colorByState = (state: cellState) =>
   switch (state) {
-  | Alive => "alive"
-  | Dead => "dead"
+  | Alive => "green"
+  | Dead => "#fff"
   };
 
 let initialFieldSize = 25;
@@ -138,25 +138,13 @@ let make = _ => {
         |]
       />
       <h2> {ReasonReact.string({j|Generation: $generation|j})} </h2>
-      {ReasonReact.array(
-         Js_array.mapi(
-           (row, y) =>
-             <div key={string_of_int(y)} className="row">
-               {ReasonReact.array(
-                  Js_array.mapi(
-                    (cs, x) =>
-                      <div
-                        key={string_of_int(x)}
-                        className={"cell " ++ classByState(cs)}
-                        onClick={_ => send(Toggle((x, y)))}
-                      />,
-                    row,
-                  ),
-                )}
-             </div>,
-           state.cells,
-         ),
-       )}
+      <Matrix.Jsx2
+        value={state.cells}
+        style={(_, state) =>
+          ReactDOMRe.Style.make(~background=colorByState(state), ())
+        }
+        onCellClick={(_, coords, _) => send(Toggle(coords))}
+      />
       <p>
         <button
           onClick={_ => {

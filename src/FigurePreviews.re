@@ -15,6 +15,7 @@ let make = (~figures) => {
        map(
          ((name, coords)) =>
            <li
+             key=name
              style={ReactDOMRe.Style.make(
                ~display="flex",
                ~flexDirection="column",

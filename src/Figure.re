@@ -2,6 +2,7 @@
 open Js_array;
 open Js_array_plus;
 open ReactDOMRe;
+open Game_model;
 
 let figureSize = figure => {
   let maxX = reduce((max, (x, _)) => max > x ? max : x, 0, figure);
@@ -13,7 +14,7 @@ let figureSize = figure => {
 let figureToMatrix = figure => {
   let (dimx, dimy) = figureSize(figure);
   init_matrix(dimx, dimy, point =>
-    some(figurePoint => figurePoint == point, figure)
+    some(figurePoint => figurePoint == point, figure) ? Alive : Dead
   );
 };
 
@@ -22,8 +23,15 @@ let make = (~coords) => {
   <Matrix
     value={figureToMatrix(coords)}
     cellSize="10px"
-    style={(_, isFigureCell) =>
-      isFigureCell ? Style.make(~background="gray", ()) : Style.make()
+    style={(_, state) =>
+      Style.make(
+        ~background=
+          switch (state) {
+          | Alive => "gray"
+          | Dead => "#fff"
+          },
+        (),
+      )
     }
   />;
 };

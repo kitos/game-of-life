@@ -2,7 +2,16 @@ type cellState =
   | Dead
   | Alive;
 
-let neighbours_deltas = [((-1), (-1)), (0, (-1)), (1, (-1)), (1, 0), (1, 1), (0, 1), ((-1), 1), ((-1), 0)];
+let neighbours_deltas = [
+  ((-1), (-1)),
+  (0, (-1)),
+  (1, (-1)),
+  (1, 0),
+  (1, 1),
+  (0, 1),
+  ((-1), 1),
+  ((-1), 0),
+];
 
 let fix_outbound = (arr, i) =>
   if (i < 0) {

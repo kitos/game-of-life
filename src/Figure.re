@@ -1,4 +1,5 @@
 [@bs.config {jsx: 3}];
+open React;
 open Js_array;
 open Js_array_plus;
 open ReactDOMRe;
@@ -30,7 +31,11 @@ let figure_states = figure => {
     let exists = some(s => s == next, states);
     let new_states = exists ? states : concat(states, [|next|]);
 
-    tries <= 0 || exists ? new_states : _make(new_states, tries - 1);
+    if (tries <= 0 || exists) {
+      new_states;
+    } else {
+      _make(new_states, tries - 1);
+    };
   };
 
   _make([|figure_to_matrix(figure)|], 5);
@@ -39,16 +44,15 @@ let figure_states = figure => {
 [@react.component]
 let make = (~coords) => {
   let all_states = figure_states(coords);
-  let (current, setCurrent) = React.useState(() => 0);
+  let (current, setCurrent) = useState(() => 0);
 
-  React.useEffect0(() => {
-    let id =
-      Js_global.setInterval(
-        () => setCurrent(n => n + 1 === length(all_states) ? 0 : n + 1),
-        1000,
-      );
-    Some(() => Js_global.clearInterval(id));
-  });
+  useEffect(() =>
+    Js_global.setInterval(
+      () => setCurrent(n => n + 1 === length(all_states) ? 0 : n + 1),
+      1000,
+    )
+    |> (id => Some(() => Js_global.clearInterval(id)))
+  );
 
   <Matrix
     value={unsafe_get(all_states, current)}

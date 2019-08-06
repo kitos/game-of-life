@@ -1,4 +1,3 @@
-[@bs.config {jsx: 3}];
 open React;
 open Js_array;
 open Js_array_plus;
@@ -38,12 +37,12 @@ let figure_states = figure => {
     };
   };
 
-  _make([|figure_to_matrix(figure)|], 5);
+  _make([|figure|], 5);
 };
 
 [@react.component]
 let make = (~coords) => {
-  let all_states = figure_states(coords);
+  let all_states = coords |> figure_to_matrix |> figure_states;
   let (current, setCurrent) = useState(() => 0);
 
   useEffect(() =>

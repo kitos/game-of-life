@@ -1,28 +1,18 @@
 open Js_array;
 
-let init = (length, fn) => {
-  let rec _make = (l: int, v: int => 'a, a: array('a)): array('a) =>
-    switch (l) {
-    | 0 => a
-    | l_ => _make(l_ - 1, v, concat(a, [|v(l_ - 1)|]))
-    };
-
-  _make(length, fn, [||]);
-};
-
-let make = (length, value) => init(length, _ => value);
-
 let init_matrix = (dimx, dimy, fn) =>
-  init(dimy, y => init(dimx, x => fn((x, y))));
+  Belt_Array.makeBy(dimy, y => Belt_Array.makeBy(dimx, x => fn((x, y))));
 
 let make_matrix = (dimx, dimy, value) => init_matrix(dimx, dimy, _ => value);
 
 let pad = (v, padding, arr) =>
-  make(padding, v) |> concat(arr) |> concat(make(padding, v));
+  Belt_Array.make(padding, v)
+  |> concat(arr)
+  |> concat(Belt_Array.make(padding, v));
 
 let pad_matrix = (v, padding, matrix) =>
   pad(
-    make(length(unsafe_get(matrix, 0)) + padding * 2, v),
+    Belt_Array.make(length(unsafe_get(matrix, 0)) + padding * 2, v),
     padding,
     map(pad(v, padding), matrix),
   );
@@ -31,14 +21,16 @@ let transpose = matrix => {
   let dimy = length(matrix);
   let dimx = length(unsafe_get(matrix, 0));
 
-  init(dimx, x => init(dimy, y => unsafe_get(unsafe_get(matrix, y), x)));
+  Belt_Array.makeBy(dimx, x =>
+    Belt_Array.makeBy(dimy, y => unsafe_get(unsafe_get(matrix, y), x))
+  );
 };
 
 let trimi = (predicate, arr) => {
   let start = findIndexi((item, i) => !predicate(item, i), arr);
   let end_ =
     arr
-    |> Belt.Array.reverse
+    |> Belt_Array.reverse
     |> findIndexi((item, i) => !predicate(item, i))
     |> (e => e === 0 ? length(arr) : - e);
 

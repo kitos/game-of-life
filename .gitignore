@@ -3,6 +3,7 @@
 .bsb.lock
 npm-debug.log
 /lib/bs/
-/build/
+/dist/
+/.cache/
 /node_modules/
 /src/**/*.bs.js

@@ -16,4 +16,4 @@ jobs:
     - run: |
         npm ci
         npm run build
-        node_modules/.bin/gh-pages -d dist --repo https://${{ secrets.GH_TOKEN }}@github.com/kitos/game-of-life.git
+        node_modules/.bin/gh-pages -d dist --user "Nikita Kirsanov <kitos.kirsanov@gmail.com>" --repo https://${{ secrets.GH_TOKEN }}@github.com/kitos/game-of-life.git

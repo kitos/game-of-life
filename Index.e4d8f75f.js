@@ -87,4 +87,4 @@ var e=arguments[3],r=function(){if("undefined"!=typeof globalThis)return globalT
 },{"react":"n8MK","./Game.bs.js":"cmLA","./FigurePreviews.bs.js":"VH0S"}],"U6vj":[function(require,module,exports) {
 "use strict";var e=require("react"),r=require("reason-react/src/ReactDOMRe.js"),t=require("./App.bs.js");r.renderToElementWithId(e.createElement(t.make,{}),"root");
 },{"react":"n8MK","reason-react/src/ReactDOMRe.js":"VUZN","./App.bs.js":"k3gO"}]},{},["U6vj"], null)
-//# sourceMappingURL=game-of-life/Index.e4d8f75f.js.map
+//# sourceMappingURL=/game-of-life/Index.e4d8f75f.js.map

@@ -41,7 +41,7 @@ let figure_states = figure => {
 };
 
 [@react.component]
-let make = (~coords) => {
+let make = (~coords, ~aliveColor="#0029f5", ~deadColor="#bdbdbd") => {
   let all_states = coords |> figure_to_matrix |> figure_states;
   let (current, setCurrent) = useState(() => 0);
 
@@ -55,13 +55,13 @@ let make = (~coords) => {
 
   <Matrix
     value={unsafe_get(all_states, current)}
-    cellSize="10px"
+    cellSize="14px"
     style={(_, state) =>
       Style.make(
         ~background=
           switch (state) {
-          | Alive => "gray"
-          | Dead => "#fff"
+          | Alive => aliveColor
+          | Dead => deadColor
           },
         (),
       )

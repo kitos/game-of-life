@@ -32,9 +32,3 @@ let make = (~figures) => {
      )}
   </ul>;
 };
-
-module Jsx2 = {
-  let component = statelessComponent("FigurePreviews");
-  let make = (~figures) =>
-    ReasonReactCompat.wrapReactForReasonReact(make, makeProps(~figures, ()));
-};

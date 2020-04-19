@@ -21,8 +21,10 @@ let transpose = matrix => {
   let dimy = length(matrix);
   let dimx = length(unsafe_get(matrix, 0));
 
-  Belt_Array.makeBy(dimx, x =>
-    Belt_Array.makeBy(dimy, y => unsafe_get(unsafe_get(matrix, y), x))
+  Belt_Array.(
+    makeBy(dimx, x =>
+      makeBy(dimy, y => unsafe_get(unsafe_get(matrix, y), x))
+    )
   );
 };
 

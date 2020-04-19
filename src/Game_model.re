@@ -29,11 +29,12 @@ let fix_outbound2 = (cells, (x, y)) => {
   (fixedX, fixedY);
 };
 
-let count_neighbours = (state: cellState, cells, (x, y)) =>
+let count_neighbours = (state: cellState, cells, (x, y)) => List.(
   neighbours_deltas
-  |> List.map(((dx, dy)) => (x + dx, y + dy))
-  |> List.map(fix_outbound2(cells))
-  |> List_plus.count(((x, y)) => cells[y][x] === state);
+  |> map(((dx, dy)) => (x + dx, y + dy))
+  |> map(fix_outbound2(cells))
+  |> List_plus.count(((x, y)) => cells[y][x] === state)
+);
 
 let count_alive_neighbours = count_neighbours(Alive);
 

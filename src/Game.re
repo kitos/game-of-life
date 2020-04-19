@@ -1,193 +1,151 @@
-[@bs.config {jsx: 2}];
+open React;
 open Game_model;
 
 type state = {
+  inProgress: bool,
   fieldSize: int,
   interval: int,
   cells: array(array(cellState)),
   generation: int,
-  intervalId: option(Js_global.intervalId),
 };
 
 type action =
   | Init
   | Clear
-  | Toggle((int, int))
+  | ToggleGame(bool)
+  | ToggleCell((int, int))
   | Evolve
-  | Start
-  | Stop
-  | SetIntervalId(option(Js_global.intervalId))
   | SetFieldSize(int)
   | SetInterval(int);
 
 let colorByState = (state: cellState) =>
   switch (state) {
-  | Alive => "green"
-  | Dead => "#fff"
+  | Alive => "#357720"
+  | Dead => "#bdbdbd"
   };
 
-let initialFieldSize = 25;
+let reducer = (state, action) =>
+  switch (action) {
+  | Init => {
+      ...state,
+      inProgress: false,
+      generation: 0,
+      cells:
+        Js_array_plus.init_matrix(state.fieldSize, state.fieldSize, _ =>
+          Js_math.random() > 0.7 ? Alive : Dead
+        ),
+    }
+  | ToggleGame(inProgress) => {...state, inProgress}
+  | Clear => {
+      ...state,
+      inProgress: false,
+      generation: 0,
+      cells:
+        Js_array_plus.make_matrix(state.fieldSize, state.fieldSize, Dead),
+    }
+  | ToggleCell(coord) => {
+      ...state,
+      generation: 0,
+      cells: toggle(state.cells, coord),
+    }
+  | Evolve => {
+      ...state,
+      cells: next_generation(state.cells),
+      generation: state.generation + 1,
+    }
+  | SetFieldSize(value) => {...state, fieldSize: Js_math.max_int(5, value)}
+  | SetInterval(value) => {...state, interval: Js_math.max_int(50, value)}
+  };
 
-let component = ReasonReact.reducerComponent("Game");
-
-let make = _ => {
-  ...component,
-
-  initialState: () => {
-    fieldSize: initialFieldSize,
-    interval: 300,
-    cells: [|[||]|],
-    generation: 0,
-    intervalId: None,
-  },
-
-  reducer: (action, state) =>
-    switch (action) {
-    | Init =>
-      ReasonReact.Update({
-        ...state,
+let useGame = () => {
+  let (state, dispatch) =
+    useReducerWithMapState(
+      reducer,
+      {
+        inProgress: false,
+        fieldSize: 25,
+        interval: 300,
+        cells: [|[||]|],
         generation: 0,
-        cells:
-          Js_array_plus.init_matrix(state.fieldSize, state.fieldSize, _ =>
-            Js_math.random() > 0.7 ? Alive : Dead
-          ),
-      })
-    | Clear =>
-      ReasonReact.Update({
-        ...state,
-        generation: 0,
-        cells:
-          Js_array_plus.make_matrix(state.fieldSize, state.fieldSize, Dead),
-      })
-    | Toggle(coord) =>
-      ReasonReact.Update({
-        ...state,
-        generation: 0,
-        cells: toggle(state.cells, coord),
-      })
-    | Evolve =>
-      ReasonReact.Update({
-        ...state,
-        cells: next_generation(state.cells),
-        generation: state.generation + 1,
-      })
-    | Start =>
-      ReasonReact.SideEffects(
-        ({send}) =>
-          switch (state.intervalId) {
-          | None =>
-            let id =
-              Js_global.setInterval(() => send(Evolve), state.interval);
-            send(SetIntervalId(Some(id)));
-          | Some(_) => Js_console.log("Game has been already started.")
-          },
-      )
-    | Stop =>
-      ReasonReact.SideEffects(
-        ({send, state}) =>
-          switch (state.intervalId) {
-          | Some(id) =>
-            Js_global.clearInterval(id);
-            send(SetIntervalId(None));
-          | None =>
-            Js_console.log(
-              "Game has not been started yet or has be stoped already.",
-            )
-          },
-      )
-    | SetIntervalId(value) =>
-      ReasonReact.Update({...state, intervalId: value})
-    | SetFieldSize(value) =>
-      ReasonReact.UpdateWithSideEffects(
-        {...state, fieldSize: Js_math.max_int(5, value)},
-        ({send}) => send(Init),
-      )
-    | SetInterval(value) =>
-      ReasonReact.UpdateWithSideEffects(
-        {...state, interval: Js_math.max_int(50, value)},
-        ({send}) => send(Stop),
-      )
-    },
+      },
+      reducer(_, Init),
+    );
+  let {inProgress, interval} = state;
 
-  didMount: ({send, onUnmount}) => {
-    send(Init);
-    onUnmount(() => send(Stop));
-  },
+  useEffect2(
+    () =>
+      if (inProgress) {
+        Js_global.(
+          setInterval(() => dispatch(Evolve), interval)
+          |> (tid => Some(() => clearInterval(tid)))
+        );
+      } else {
+        None;
+      },
+    (inProgress, interval),
+  );
 
-  render: ({state, send}) => {
-    let inProgress = state.intervalId !== None;
-    let generation = state.generation;
-
-    <div>
-      <h2> {ReasonReact.string({j|Generation: $generation|j})} </h2>
-      <Matrix.Jsx2
-        value={state.cells}
-        style={(_, state) =>
-          ReactDOMRe.Style.make(~background=colorByState(state), ())
-        }
-        onCellClick={(_, coords, _) => send(Toggle(coords))}
-      />
-      <p>
-        <button
-          onClick={_ => {
-            send(Stop);
-            send(Evolve);
-          }}>
-          {ReasonReact.string("Evolve")}
-        </button>
-        <button onClick={_ => send(inProgress ? Stop : Start)}>
-          {ReasonReact.string(inProgress ? "Pause" : "Start")}
-        </button>
-        <button
-          onClick={_ => {
-            send(Stop);
-            send(Init);
-          }}>
-          {ReasonReact.string("Random")}
-        </button>
-        <button
-          onClick={_ => {
-            send(Stop);
-            send(Clear);
-          }}>
-          {ReasonReact.string("Clear")}
-        </button>
-      </p>
-      <p>
-        <label>
-          {ReasonReact.string("Field size: ")}
-          <input
-            type_="number"
-            min=5
-            max="50"
-            value={string_of_int(state.fieldSize)}
-            onChange={_event =>
-              send(SetFieldSize(ReactEvent.Form.target(_event)##value))
-            }
-          />
-        </label>
-        <label>
-          {ReasonReact.string("Interval: ")}
-          <input
-            type_="number"
-            min=50
-            max="5000"
-            value={string_of_int(state.interval)}
-            onChange={_event =>
-              send(SetInterval(ReactEvent.Form.target(_event)##value))
-            }
-          />
-        </label>
-      </p>
-    </div>;
-  },
+  (state, dispatch);
 };
 
-module Jsx3 = {
-  [@bs.obj] external makeProps: (~dummy: bool, unit) => _ = "";
-  let make =
-    ReasonReactCompat.wrapReasonReactForReact(
-      ~component, (reactProps: {. "dummy": bool}) =>
-      make()
-    );
+[@react.component]
+let make = () => {
+  let ({inProgress, fieldSize, interval, generation, cells}, dispatch) =
+    useGame();
+
+  <div>
+    <h2> {ReasonReact.string({j|Generation: $generation|j})} </h2>
+    <Matrix
+      value=cells
+      style={(_, state) =>
+        ReactDOMRe.Style.make(~background=colorByState(state), ())
+      }
+      onCellClick={(_, coords, _) => dispatch(ToggleCell(coords))}
+    />
+    <p>
+      <button
+        onClick={_ => {
+          dispatch(ToggleGame(false));
+          dispatch(Evolve);
+        }}>
+        {ReasonReact.string("Evolve")}
+      </button>
+      <button onClick={_ => dispatch(ToggleGame(!inProgress))}>
+        {ReasonReact.string(inProgress ? "Pause" : "Start")}
+      </button>
+      <button onClick={_ => {dispatch(Init)}}>
+        {ReasonReact.string("Random")}
+      </button>
+      <button onClick={_ => dispatch(Clear)}>
+        {ReasonReact.string("Clear")}
+      </button>
+    </p>
+    <p>
+      <label>
+        {ReasonReact.string("Field size: ")}
+        <input
+          type_="number"
+          min=5
+          max="50"
+          value={string_of_int(fieldSize)}
+          onChange={_event => {
+            dispatch(SetFieldSize(ReactEvent.Form.target(_event)##value));
+            dispatch(Init);
+          }}
+        />
+      </label>
+      <label>
+        {ReasonReact.string("Interval: ")}
+        <input
+          type_="number"
+          min=50
+          max="5000"
+          value={string_of_int(interval)}
+          onChange={_event =>
+            dispatch(SetInterval(ReactEvent.Form.target(_event)##value))
+          }
+        />
+      </label>
+    </p>
+  </div>;
 };

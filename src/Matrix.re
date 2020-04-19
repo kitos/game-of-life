@@ -4,9 +4,10 @@ let cellStyle = cellSize =>
   Style.make(
     ~height=cellSize,
     ~width=cellSize,
-    ~border="0 solid lightgray",
-    ~borderRightWidth="1px",
-    ~borderBottomWidth="1px",
+    ~background="#bdbdbd",
+    ~border="3px solid #fcfcfc",
+    ~borderBottomColor="#7a7a7a",
+    ~borderRightColor="#7a7a7a",
     (),
   );
 
@@ -23,7 +24,7 @@ let matrixStyle =
 let make =
     (
       ~value,
-      ~cellSize="15px",
+      ~cellSize="20px",
       ~style=(_, _) => Style.make(),
       ~onCellClick=(_, _, _) => (),
     ) => {
@@ -53,14 +54,4 @@ let make =
        ),
      )}
   </div>;
-};
-
-module Jsx2 = {
-  let component = ReasonReact.statelessComponent("Matrix");
-  let make =
-      (~value, ~cellSize="15px", ~style=(_, _) => Style.make(), ~onCellClick) =>
-    ReasonReactCompat.wrapReactForReasonReact(
-      make,
-      makeProps(~value, ~cellSize, ~style, ~onCellClick, ()),
-    );
 };

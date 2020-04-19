@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html --public-url game-of-life",
+    "build": "parcel build src/index.html --public-url /game-of-life",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
